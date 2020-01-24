@@ -1,3 +1,4 @@
+
 # spring-boot-301-restaurant-project
 This project contains configuration and microservices for restaurant project case study for spring boot 301.
 
@@ -19,5 +20,3 @@ Spring cloud config server based microservice which provides provision to fetch 
 
 Configuration properties needed by Restaurant services, if switched to config server later.
 
-
-**For more information on each of these components, please refer to README.md files of these component folders.**
