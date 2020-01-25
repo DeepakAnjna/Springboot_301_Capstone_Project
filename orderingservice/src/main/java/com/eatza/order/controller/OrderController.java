@@ -2,6 +2,8 @@ package com.eatza.order.controller;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,17 +19,18 @@ import com.eatza.order.dto.OrderRequestDto;
 import com.eatza.order.dto.OrderUpdateDto;
 import com.eatza.order.dto.OrderUpdateResponseDto;
 import com.eatza.order.exception.OrderException;
+import com.eatza.order.kafka.sender.MsgPublisher;
 import com.eatza.order.model.Order;
 import com.eatza.order.service.orderservice.OrderService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @RestController
 public class OrderController {
 
 	@Autowired
 	OrderService orderService;
+	
+	@Autowired
+	MsgPublisher msgPublisher;
 
 	private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
@@ -103,6 +106,10 @@ public class OrderController {
 		}	
 	}
 
-
+	@PostMapping(value = "/publish")
+    public String sendMessageToKafkaTopic(@RequestBody String message) {
+        this.msgPublisher.sendMessage(message);
+        return "Message sent to the Kafka Successfully";
+    }
 
 }
