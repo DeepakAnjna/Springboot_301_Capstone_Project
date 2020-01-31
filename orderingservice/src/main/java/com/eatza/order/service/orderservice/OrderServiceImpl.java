@@ -68,8 +68,9 @@ public class OrderServiceImpl implements OrderService {
 			 * restTemplate.setMessageConverters(messageConverters);
 			 */
 			try {
+				long id=itemDto.getItemId();
 				logger.debug("Calling restaurant search service to get item details");
-				ItemFetchDto item = retaurantServiceClient.getMenuItemById(itemDto.getItemId());
+				ItemFetchDto item = retaurantServiceClient.getMenuItemById(id);
 
 				if(item==null ) {
 

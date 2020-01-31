@@ -2,14 +2,11 @@ package com.eatza.restaurantsearch;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-import org.springframework.context.annotation.Bean;
 
-import com.eatza.restaurantsearch.config.JwtFilter;
-
-@SpringBootApplication
+@SpringBootApplication(exclude = KafkaAutoConfiguration.class)
 @EnableCaching
 @EnableEurekaClient
 public class RestaurantsearchserviceApplication {
@@ -18,13 +15,12 @@ public class RestaurantsearchserviceApplication {
 		SpringApplication.run(RestaurantsearchserviceApplication.class, args);
 	}
 
-	
-	@Bean
-	public FilterRegistrationBean jwtFilter() {
-		final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-		registrationBean.setFilter(new JwtFilter());
-		registrationBean.addUrlPatterns("/restaurant/*", "/restaurants/*","/item/");
-
-		return registrationBean;
-	}
+	/*
+	 * @Bean public FilterRegistrationBean jwtFilter() { final
+	 * FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+	 * registrationBean.setFilter(new JwtFilter());
+	 * registrationBean.addUrlPatterns("/restaurant/*", "/restaurants/*","/item/");
+	 * 
+	 * return registrationBean; }
+	 */
 }

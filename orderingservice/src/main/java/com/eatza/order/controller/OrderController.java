@@ -2,11 +2,14 @@ package com.eatza.order.controller;
 
 import java.util.Optional;
 
+import org.hibernate.cache.spi.support.AbstractReadWriteAccess.Item;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +22,7 @@ import com.eatza.order.dto.OrderRequestDto;
 import com.eatza.order.dto.OrderUpdateDto;
 import com.eatza.order.dto.OrderUpdateResponseDto;
 import com.eatza.order.exception.OrderException;
+import com.eatza.order.kafka.sender.MessageData;
 import com.eatza.order.kafka.sender.MsgPublisher;
 import com.eatza.order.model.Order;
 import com.eatza.order.service.orderservice.OrderService;
@@ -31,21 +35,26 @@ public class OrderController {
 	
 	@Autowired
 	MsgPublisher msgPublisher;
+	
+	@Autowired
+    KafkaTemplate<String, MessageData> KafkaJsontemplate;
+	 @Value(value = "${kafka-topic}")
+	 private String TOPIC_NAME;
 
 	private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
 	@PostMapping("/order")
-	public ResponseEntity<Order> placeOrder(@RequestHeader String authorization, @RequestBody OrderRequestDto orderRequestDto) throws OrderException{
-		logger.debug("In place order method, calling the service");
+	public ResponseEntity<Order> placeOrder( @RequestBody OrderRequestDto orderRequestDto) throws OrderException{
+		logger.info("In place order method, calling the service");
 		Order order = orderService.placeOrder(orderRequestDto);
-		logger.debug("Order Placed Successfully");
+		logger.info("Order Placed Successfully");
 		return ResponseEntity
 				.status(HttpStatus.OK)
 				.body(order);
 
 	}
 	@PutMapping("/order/cancel/{orderId}")
-	public ResponseEntity<String> cancel(@RequestHeader String authorization, @PathVariable Long orderId) throws OrderException{
+	public ResponseEntity<String> cancel( @PathVariable Long orderId) throws OrderException{
 		logger.debug("In cancel order method");
 		boolean result =orderService.cancelOrder(orderId);
 		if(result) {
@@ -60,7 +69,7 @@ public class OrderController {
 	}
 
 	@PutMapping("/order")
-	public ResponseEntity<OrderUpdateResponseDto> updateOrder(@RequestHeader String authorization, @RequestBody OrderUpdateDto orderUpdateDto) throws OrderException{
+	public ResponseEntity<OrderUpdateResponseDto> updateOrder( @RequestBody OrderUpdateDto orderUpdateDto) throws OrderException{
 
 		logger.debug(" In updateOrder method, calling service");
 		OrderUpdateResponseDto updatedResponse = orderService.updateOrder(orderUpdateDto);
@@ -74,7 +83,7 @@ public class OrderController {
 	}
 
 	@GetMapping("/order/{orderId}")
-	public ResponseEntity<Order> getOrderById(@RequestHeader String authorization, @PathVariable Long orderId) throws OrderException{
+	public ResponseEntity<Order> getOrderById( @PathVariable Long orderId) throws OrderException{
 		logger.debug("In get order by id method, calling service to get Order by ID");
 		Optional<Order> order = orderService.getOrderById(orderId);
 		if(order.isPresent()) {
@@ -90,7 +99,7 @@ public class OrderController {
 	}
 
 	@GetMapping("/order/value/{orderId}")
-	public ResponseEntity<Double> getOrderAmountByOrderId(@RequestHeader String authorization, @PathVariable Long orderId) throws OrderException{
+	public ResponseEntity<Double> getOrderAmountByOrderId( @PathVariable Long orderId) throws OrderException{
 		logger.debug("In get order value by id method, calling service to get Order value");
 		double price = orderService.getOrderAmountByOrderId(orderId);
 
@@ -106,10 +115,10 @@ public class OrderController {
 		}	
 	}
 
-	@PostMapping(value = "/publish")
-    public String sendMessageToKafkaTopic(@RequestBody String message) {
-        this.msgPublisher.sendMessage(message);
-        return "Message sent to the Kafka Successfully";
-    }
+	 @PostMapping(value = "/postItem",consumes = {"application/json"},produces = {"application/json"})
+	    public String postJsonMessage(@RequestBody MessageData messageData){
+	        KafkaJsontemplate.send(TOPIC_NAME,messageData);
+	        return "Message published successfully";
+	    }
 
 }

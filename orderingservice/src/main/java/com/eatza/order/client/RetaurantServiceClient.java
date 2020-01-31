@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.eatza.order.dto.ItemFetchDto;
 
-@FeignClient("RESTAURANT")
+@FeignClient("restaurant")
 @RequestMapping("/item")
 public interface RetaurantServiceClient {
-	@GetMapping(value="/id/itemId")
-		ItemFetchDto getMenuItemById(@PathVariable ("itemId") long itemId); 
+	
+	@GetMapping(value="/id/{itemId}")
+	ItemFetchDto getMenuItemById(@PathVariable Long itemId); 
 		 
 
 }
